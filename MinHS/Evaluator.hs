@@ -16,7 +16,6 @@ data Value = I Integer
            | Nil
            | Cons Integer Value
            -- Others as needed
-           | Clos VEnv Id [Id] Exp
            | Lam VFun
            deriving (Show)
 
@@ -70,6 +69,9 @@ evalE env (Let binds body) =
 evalE env (Letfun (Bind name _ args body)) =
   evalLetFun env name args body
 
+--evalE env (Letrec binds body) = 
+--  evalLetRec env binds body
+
 evalE _ e = 
   let msg = PP.renderPretty 1.0 80 $ PP.pretty e in
     error $  "Unimplemented for:\n" ++
@@ -85,16 +87,30 @@ bindLam env [] body = evalE env body
 bindLam env (arg : args) body = 
   lam $ \v ->
     let env' = E.add env (arg, v)
-    in bindLam env' args body 
+    in bindLam env' args body
 
-evalApp :: Value -> Value -> Value  
-evalApp (Lam (VFun g)) x = g x
-evalApp f _ = error $ "Not a valid app term " ++ show f
+
+evalLet :: VEnv -> [Bind] -> Exp -> Value
+evalLet env [] body = evalE env body
+evalLet env (bind : binds) body = case bind of
+  Bind name _ args def ->
+    let env' = E.add env (name, bindLam env args def)
+    in evalLet env' binds body
+
 
 evalLetFun :: VEnv -> Id -> [Id] -> Exp -> Value
 evalLetFun env name args body =
   let env' = E.add env (name, evalLetFun env name args body)
   in bindLam env' args body
+
+
+evalLetRec :: VEnv -> [Bind] -> Exp -> Value
+evalLetRec env binds body = 
+
+
+evalApp :: Value -> Value -> Value  
+evalApp (Lam (VFun g)) x = g x
+evalApp f _ = error $ "Not a valid app term " ++ show f
 
 
 evalOp :: Op -> Value
@@ -128,12 +144,4 @@ evalOp op =
     Tail -> lam $ \l -> case l of
       Nil -> error $ "Tail of nil!"
       Cons _ t -> t
-
-
-evalLet :: VEnv -> [Bind] -> Exp -> Value
-evalLet env [] body = evalE env body
-evalLet env (bind : binds) body = case bind of
-  Bind id _ args def ->
-    let env' = E.add env (id, bindLam env args def)
-    in evalLet env' binds body
 
