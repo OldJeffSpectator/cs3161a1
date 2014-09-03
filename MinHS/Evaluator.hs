@@ -79,19 +79,22 @@ evalE _ e =
 lam :: (Value -> Value) -> Value
 lam f = Lam $ VFun f
 
-evalApp :: Value -> Value -> Value
-evalApp f @ (Clos env name [arg] body) x = 
-  let env' = E.addAll env [(name, f), (arg, x)]
-    in evalE env' body  
+
+bindLam :: VEnv -> [Id] -> Exp -> Value
+bindLam env [] body = evalE env body
+bindLam env (arg : args) body = 
+  lam $ \v ->
+    let env' = E.add env (arg, v)
+    in bindLam env' args body 
+
+evalApp :: Value -> Value -> Value  
 evalApp (Lam (VFun g)) x = g x
 evalApp f _ = error $ "Not a valid app term " ++ show f
 
 evalLetFun :: VEnv -> Id -> [Id] -> Exp -> Value
-evalLetFun env name [] body = 
-  let env' = E.add env (name, evalLetFun env name [] body)
-  in evalE env' body
 evalLetFun env name args body =
-  Clos env name args body
+  let env' = E.add env (name, evalLetFun env name args body)
+  in bindLam env' args body
 
 
 evalOp :: Op -> Value
@@ -131,6 +134,6 @@ evalLet :: VEnv -> [Bind] -> Exp -> Value
 evalLet env [] body = evalE env body
 evalLet env (bind : binds) body = case bind of
   Bind id _ args def ->
-    let env' = E.add env (id, evalE env def)
+    let env' = E.add env (id, bindLam env args def)
     in evalLet env' binds body
 
