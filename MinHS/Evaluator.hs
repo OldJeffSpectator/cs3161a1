@@ -69,8 +69,8 @@ evalE env (Let binds body) =
 evalE env (Letfun (Bind name _ args body)) =
   evalLetFun env name args body
 
---evalE env (Letrec binds body) = 
---  evalLetRec env binds body
+evalE env (Letrec binds body) = 
+  evalLetRec env binds body
 
 evalE _ e = 
   let msg = PP.renderPretty 1.0 80 $ PP.pretty e in
@@ -100,12 +100,21 @@ evalLet env (bind : binds) body = case bind of
 
 evalLetFun :: VEnv -> Id -> [Id] -> Exp -> Value
 evalLetFun env name args body =
+  -- recursive call binds the knot,
+  -- distinguishes from evalLet
   let env' = E.add env (name, evalLetFun env name args body)
   in bindLam env' args body
 
 
 evalLetRec :: VEnv -> [Bind] -> Exp -> Value
-evalLetRec env binds body = 
+evalLetRec env binds body =
+  -- using mutual recursion to implement mutual recursion?
+  -- cheaty! 
+  let
+    eval (Bind name _ args body) = (name, bindLam env' args body)
+    binds' = eval `map` binds
+    env' = E.addAll env binds'
+  in evalE env' body
 
 
 evalApp :: Value -> Value -> Value  
