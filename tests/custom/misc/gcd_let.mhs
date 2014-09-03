@@ -1,0 +1,7 @@
+main :: Int
+    = let gcd' :: (Int -> Int -> Int) 
+        = letfun gcd' :: (Int -> Int -> Int) a b
+            = if b == 0 then a else gcd' b (a % b);
+      in let abs :: (Int -> Int) x = if x < 0 then -x else x;
+         in let gcd :: (Int -> Int -> Int) x y = gcd' (abs x) (abs y);
+            in gcd 45684 4512;

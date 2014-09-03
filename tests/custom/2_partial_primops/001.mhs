@@ -1,0 +1,11 @@
+main :: Bool
+    = let additive_inverse :: (Int -> Bool)
+        = letfun additive_inverse :: (Int -> Bool) x =
+            let nonzero :: (Int -> Bool)
+                = letfun nonzero :: (Int -> Bool) = (/=) 0;
+            in let neg :: (Int -> Int)
+                = letfun neg :: (Int -> Int) = (-) 0;
+                in let not :: (Bool -> Bool)
+                    = letfun not :: (Bool -> Bool) x = if x then False else True;  
+                    in not (nonzero ((neg x) + x));
+    in additive_inverse 6;

@@ -1,0 +1,10 @@
+main :: Int =
+    letrec sum :: ([Int] -> Int) x = if null x then 0 else head x + sum (tail x);
+           mults :: (Int -> [Int] -> [Int]) x acc 
+                = if x <= 1000 then 
+                    (if or ((x % 3) == 0) ((x % 5) == 0) 
+                        then mults (x+1) (Cons x acc) 
+                        else mults (x+1) acc)
+                   else acc;
+           or :: (Bool -> Bool -> Bool) x y = if x then x else y;
+    in sum (mults 0 Nil);

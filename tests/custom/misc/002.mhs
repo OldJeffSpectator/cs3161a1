@@ -1,0 +1,6 @@
+-- Tests let chaining with let functions
+main :: Int =
+    let a :: Int = 7;
+        b :: (Int -> Int) x = x + a;
+        c :: Int = 1 + b a;
+    in c * c;

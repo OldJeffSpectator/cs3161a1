@@ -101,7 +101,7 @@ evalLet env (bind : binds) body = case bind of
 evalLetFun :: VEnv -> Id -> [Id] -> Exp -> Value
 evalLetFun env name args body =
   -- recursive call binds the knot,
-  -- distinguishes from evalLet
+  -- distinguishes letFun from let
   let env' = E.add env (name, evalLetFun env name args body)
   in bindLam env' args body
 

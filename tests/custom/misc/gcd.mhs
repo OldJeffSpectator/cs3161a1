@@ -1,0 +1,5 @@
+main :: Int
+    = letrec gcd  :: (Int -> Int -> Int) x y = gcd' (abs x) (abs y);
+             abs  :: (Int -> Int)        x   = if x < 0 then -x else x;
+             gcd' :: (Int -> Int -> Int) a b = if b == 0 then a else (gcd' b (a % b));
+    in gcd 45684 4512;

@@ -1,0 +1,2 @@
+main :: Int
+    = (letfun mul :: (Int -> Int -> Int) = (*)) 4 3;

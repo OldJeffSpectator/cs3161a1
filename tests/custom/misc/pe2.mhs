@@ -1,0 +1,22 @@
+main :: Int =
+    letrec fibs' :: (Int -> Int -> [Int] -> [Int]) a b acc = let c :: Int = a + b;
+                           in if c > 4000000
+                              then acc
+                              else fibs' b c (Cons c acc);
+           filter :: ((Int -> Bool) -> [Int] -> [Int]) fun ls = if null ls
+                           then ls
+                           else let x :: Int = head ls;
+                                    xs :: [Int] = tail ls;
+                                in (if fun x
+                                   then Cons x (filter fun xs)
+                                   else (filter fun xs));
+            isEven :: (Int -> Bool) x = x % 2 == 0;
+            foldl :: ((Int -> Int -> Int) -> [Int] -> Int) fun ls = foldl' fun ls 0;
+            foldl' :: ((Int -> Int -> Int) -> [Int] -> Int -> Int) fun ls acc = if null ls
+                           then acc
+                           else let x :: Int = head ls;
+                                    xs :: [Int] = tail ls;
+                                in foldl' fun xs (fun acc x);
+            fibs :: [Int] = fibs' 0 1 Nil;
+            sum :: ([Int] -> Int) = foldl (+); 
+    in sum (filter isEven fibs);
