@@ -112,8 +112,8 @@ evalLetRec env binds body =
   -- cheaty! 
   let
     eval (Bind name _ args body) = (name, bindLam env' args body)
-    binds' = eval `map` binds
-    env' = E.addAll env binds'
+    bindVals = eval `map` binds
+    env' = E.addAll env bindVals
   in evalE env' body
 
 
