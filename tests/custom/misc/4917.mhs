@@ -1,0 +1,40 @@
+main :: [Int]
+    = letrec eval' :: ([Int] -> [Int] -> Int -> Int -> Int -> [Int]) output mem r0 r1 ip = 
+			if getMem mem ip == 0 then output else evalInstruction output mem r0 r1 ip;
+	     eval :: ([Int] -> [Int]) inp =
+			eval' Nil inp 0 0 0;
+             input :: ([Int]) = 
+			(Cons 3 (Cons 3 (Cons 3 (Cons 3 
+			(Cons 8 (Cons 0 (Cons 7 (Cons 11
+			(Cons 0 (Cons 8 (Cons 0 (Cons 13
+			(Cons 0 (Cons 0 (Cons 14 (Cons 0 
+			(Nil)))))))))))))))));
+	     ding :: ([Int] -> [Int]) output = 
+			(Cons (-1) output);
+	     print :: ([Int] -> Int -> [Int]) output x =
+			(Cons x output);
+             constrain :: (Int -> Int) x =
+                        x % 16;
+	     getMem :: ([Int] -> Int -> Int) mem index =
+			if index == 0 then (head mem) else (getMem (tail mem) (index - 1));
+	     setMem :: ([Int] -> Int -> Int -> [Int]) mem index value =
+			if index == 0 then (Cons value (tail mem)) else (Cons (head mem) (setMem (tail mem) (index - 1) value));
+             evalInstruction :: ([Int] -> [Int] -> Int -> Int -> Int -> [Int]) output mem r0 r1 ip = 
+			if (getMem mem ip) == 0 then eval' output mem r0 r1 ip else
+			if (getMem mem ip) == 1 then eval' output mem (constrain (r0 + r1)) r1 (constrain ip + 1) else 
+			if (getMem mem ip) == 2 then eval' output mem (constrain (r0 - r1)) r1 (constrain ip + 1) else 
+			if (getMem mem ip) == 3 then eval' output mem (constrain (r0 + 1)) r1 (constrain ip + 1) else
+			if (getMem mem ip) == 4 then eval' output mem r0 (constrain (r1 + 1)) (constrain ip + 1) else
+			if (getMem mem ip) == 5 then eval' output mem (constrain (r0 - 1)) r1 (constrain ip + 1) else
+			if (getMem mem ip) == 6 then eval' output mem r0 (constrain (r1 - 1)) (constrain ip + 1) else
+			if (getMem mem ip) == 7 then eval' (ding output) mem r0 r1 (constrain ip + 1) else
+			if (getMem mem ip) == 8 then eval' (print output (getMem mem (getMem mem (constrain (ip + 1))))) mem r0 r1 (constrain ip + 2) else
+			if (getMem mem ip) == 9 then eval' output mem (getMem mem (constrain (ip + 1))) r1 (constrain ip + 2) else
+			if (getMem mem ip) == 10 then eval' output mem r0 (getMem mem (getMem mem (getMem mem (constrain (ip + 1))))) (constrain ip + 2) else
+			if (getMem mem ip) == 11 then eval' output (setMem mem (getMem mem (constrain ip + 1)) r0) r0 r1 (constrain ip + 2) else
+			if (getMem mem ip) == 12 then eval' output (setMem mem (getMem mem (constrain ip + 1)) r1) r0 r1 (constrain ip + 2) else
+			if (getMem mem ip) == 13 then eval' output mem r0 r1 (getMem mem (constrain (ip + 1))) else
+			if (getMem mem ip) == 14 then eval' output mem r0 r1 (if r0 == 0 then (getMem mem (constrain (ip + 1))) else (constrain ip + 2)) else
+			if (getMem mem ip) == 15 then eval' output mem r0 r1 (if r0 > 0  then (getMem mem (constrain (ip + 1))) else (constrain ip + 2)) else
+			(Nil);
+    in eval input;

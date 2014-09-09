@@ -1,0 +1,51 @@
+main :: [Int] =
+	letrec  zeroMem :: [Int] = letfun zeroMem :: [Int] = Cons 0 zeroMem;
+		
+		halt    :: Int = 0;
+		left    :: Int = 1;
+		right   :: Int = 2;
+		inc     :: Int = 3;
+		dec     :: Int = 4;
+		print   :: Int = 5;
+		loop    :: Int = 6;
+		endLoop :: Int = 7;
+
+		input   :: [Int] = (Cons inc (Cons inc (Cons inc (Cons inc (Cons inc (Cons print (Cons loop (Cons print (Cons dec (Cons endLoop (Cons 0 Nil)))))))))));
+
+		getCell :: ([Int] -> Int -> Int) tape pos = 
+			if pos == 0 then (head tape) else getCell (tail tape) (pos - 1);
+		setCell :: ([Int] -> Int -> Int -> [Int]) tape pos value =
+			if pos == 0 then (Cons value (tail tape)) else setCell (tail tape) (pos - 1) value;
+
+		constrain :: (Int -> Int) x = if x < 0 then 0 else x;
+
+		nextEndLoop :: ([Int] -> Int -> Int -> Int) input pos sofar = 
+			if (getCell input pos) == endLoop then
+				if sofar == 0 then 
+					pos + 1 
+				else 
+					(nextEndLoop input (pos + 1) (sofar - 1))
+			else
+				(nextEndLoop input (pos + 1) sofar);
+
+		eval    :: ([Int] -> [Int]) input =
+			eval' Nil input 0 (Cons 0 zeroMem) 0 Nil;
+
+		eval'   :: ([Int] -> [Int] -> Int -> [Int] -> Int -> [Int] -> [Int]) output input ip tape pos loopStack =
+			if (getCell input ip) == halt then output else
+			if (getCell input ip) == left then (eval' output input (ip + 1) tape (constrain (pos - 1)) loopStack) else 
+			if (getCell input ip) == right then (eval' output input (ip + 1) tape (pos + 1) loopStack) else
+			if (getCell input ip) == inc then (eval' output input (ip + 1)  (setCell tape pos ((getCell tape pos) + 1)) pos loopStack) else
+			if (getCell input ip) == dec then (eval' output input (ip + 1) (setCell tape pos ((getCell tape pos) - 1)) pos loopStack) else
+			if (getCell input ip) == print then (eval' (Cons (getCell tape pos) output) input (ip + 1) tape pos loopStack) else
+			if (getCell input ip) == loop then
+				(if (getCell tape pos) == 0 then 
+					eval' output input (nextEndLoop input (ip + 1) 0) tape pos loopStack
+				else 
+					eval' output input (ip + 1) tape pos (Cons ip loopStack))
+				else
+			if (getCell input ip) == endLoop then (eval' output input (head loopStack) tape pos (tail loopStack)) else
+			Nil;
+
+	in
+		eval input;

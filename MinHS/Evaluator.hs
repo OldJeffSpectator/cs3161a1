@@ -26,10 +26,8 @@ instance PP.Pretty Value where
   pretty (Cons x v) = PP.parens (datacon "Cons" PP.<+> numeric x PP.<+> PP.pretty v)
   pretty _ = undefined -- should not ever be used
 
-
 evaluate :: Program -> Value
 evaluate bs = evalE E.empty (Let bs (Var "main"))
-
 
 evalE :: VEnv -> Exp -> Value
 
@@ -77,10 +75,8 @@ evalE _ e =
     error $  "Unimplemented for:\n" ++
       PP.displayS msg ""
 
-
 lam :: (Value -> Value) -> Value
 lam f = Lam $ VFun f
-
 
 bindLam :: VEnv -> [Id] -> Exp -> Value
 bindLam env [] body = evalE env body
@@ -89,7 +85,6 @@ bindLam env (arg : args) body =
     let env' = E.add env (arg, v)
     in bindLam env' args body
 
-
 evalLet :: VEnv -> [Bind] -> Exp -> Value
 evalLet env [] body = evalE env body
 evalLet env (bind : binds) body = case bind of
@@ -97,14 +92,12 @@ evalLet env (bind : binds) body = case bind of
     let env' = E.add env (name, bindLam env args def)
     in evalLet env' binds body
 
-
 evalLetFun :: VEnv -> Id -> [Id] -> Exp -> Value
 evalLetFun env name args body =
   -- recursive call binds the knot,
   -- distinguishes letFun from let
   let env' = E.add env (name, evalLetFun env name args body)
   in bindLam env' args body
-
 
 evalLetRec :: VEnv -> [Bind] -> Exp -> Value
 evalLetRec env binds body =
@@ -116,11 +109,9 @@ evalLetRec env binds body =
     env' = E.addAll env bindVals
   in evalE env' body
 
-
 evalApp :: Value -> Value -> Value  
 evalApp (Lam (VFun g)) x = g x
 evalApp f _ = error $ "Not a valid app term " ++ show f
-
 
 evalOp :: Op -> Value
 evalOp op = 
@@ -153,4 +144,3 @@ evalOp op =
     Tail -> lam $ \l -> case l of
       Nil -> error $ "Tail of nil!"
       Cons _ t -> t
-
